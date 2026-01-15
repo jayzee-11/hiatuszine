@@ -1,0 +1,193 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 60px;
+            font-weight: 400;
+            letter-spacing: 0.05em;
+        }
+
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .gallery img {
+            width: 100%;
+            height: auto;
+            display: block;
+            cursor: pointer;
+        }
+
+        .fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .fullscreen.active {
+            display: flex;
+        }
+
+        .fullscreen img {
+            max-width: 90%;
+            max-height: 90%;
+            cursor: pointer;
+        }
+
+        .fullscreen-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .fullscreen-controls button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .fullscreen-controls button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 30px 15px;
+            }
+
+            h1 {
+                font-size: 20px;
+                margin-bottom: 40px;
+            }
+
+            .gallery {
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Zine</h1>
+    <div class="gallery" id="gallery"></div>
+    <div class="fullscreen" id="fullscreen">
+        <button class="close-btn" id="closeBtn">Close</button>
+        <img id="fullscreenImg" src="" alt="">
+        <div class="fullscreen-controls">
+            <button id="prevBtn">← Previous</button>
+            <button id="nextBtn">Next →</button>
+        </div>
+    </div>
+
+    <script>
+        let currentImageIndex = 0;
+        const totalImages = 25;
+
+        // Create fullscreen overlay HTML
+        function createFullscreenOverlay() {
+            const fullscreen = document.getElementById('fullscreen');
+            const fullscreenImg = document.getElementById('fullscreenImg');
+            const closeBtn = document.getElementById('closeBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+
+            closeBtn.addEventListener('click', () => {
+                fullscreen.classList.remove('active');
+            });
+
+            prevBtn.addEventListener('click', () => {
+                currentImageIndex = (currentImageIndex - 1 + totalImages) % totalImages;
+                updateFullscreenImage();
+            });
+
+            nextBtn.addEventListener('click', () => {
+                currentImageIndex = (currentImageIndex + 1) % totalImages;
+                updateFullscreenImage();
+            });
+
+            return { fullscreen, fullscreenImg };
+        }
+
+        // Update fullscreen image
+        function updateFullscreenImage() {
+            const fullscreenImg = document.getElementById('fullscreenImg');
+            fullscreenImg.src = `imgs/${currentImageIndex + 1}.jpg`;
+        }
+
+        // Add fullscreen functionality to image
+        function addFullscreenListener(imgElement, index) {
+            imgElement.addEventListener('dblclick', () => {
+                currentImageIndex = index;
+                updateFullscreenImage();
+                document.getElementById('fullscreen').classList.add('active');
+            });
+        }
+
+        createFullscreenOverlay();
+        const gallery = document.getElementById('gallery');
+        
+        for (let i = 1; i <= totalImages; i++) {
+            const imgElement = document.createElement('img');
+            imgElement.src = `imgs/${i}.jpg`;
+            imgElement.alt = '';
+            addFullscreenListener(imgElement, i - 1);
+            gallery.appendChild(imgElement);
+        }
+    </script>
+</body>
+</html>
