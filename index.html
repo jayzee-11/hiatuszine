@@ -66,26 +66,41 @@
 
         .fullscreen-controls {
             position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
+            top: 50%;
+            left: 0;
+            right: 0;
+            transform: translateY(-50%);
             display: flex;
-            gap: 20px;
+            justify-content: space-between;
             align-items: center;
+            padding: 0 24px;
+            pointer-events: none; /* clicks pass through except on buttons */
         }
 
         .fullscreen-controls button {
+            pointer-events: auto;
+            width: 48px;
+            height: 48px;
+            border-radius: 999px;
+            padding: 0;
+            display: grid;
+            place-items: center;
+
             background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            padding: 10px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.45);
             cursor: pointer;
-            font-size: 14px;
-            transition: background 0.2s;
+            font-size: 20px;
+            line-height: 1;
+            transition: background 0.2s, transform 0.08s ease;
         }
 
         .fullscreen-controls button:hover {
             background: rgba(255, 255, 255, 0.3);
+        }
+
+        .fullscreen-controls button:active {
+            transform: scale(0.96);
         }
 
         .close-btn {
@@ -119,6 +134,16 @@
                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
                 gap: 15px;
             }
+
+            .fullscreen-controls {
+                padding: 0 12px;
+            }
+
+            .fullscreen-controls button {
+                width: 42px;
+                height: 42px;
+                font-size: 18px;
+            }
         }
     </style>
 </head>
@@ -129,8 +154,8 @@
         <button class="close-btn" id="closeBtn">Close</button>
         <img id="fullscreenImg" src="" alt="">
         <div class="fullscreen-controls">
-            <button id="prevBtn">← Previous</button>
-            <button id="nextBtn">Next →</button>
+            <button id="prevBtn" aria-label="Previous photo">←</button>
+            <button id="nextBtn" aria-label="Next photo">→</button>
         </div>
     </div>
 
@@ -179,6 +204,22 @@
         }
 
         createFullscreenOverlay();
+
+        document.addEventListener('keydown', (e) => {
+            const fullscreen = document.getElementById('fullscreen');
+            if (!fullscreen.classList.contains('active')) return;
+
+            if (e.key === 'ArrowLeft') {
+                currentImageIndex = (currentImageIndex - 1 + totalImages) % totalImages;
+                updateFullscreenImage();
+            } else if (e.key === 'ArrowRight') {
+                currentImageIndex = (currentImageIndex + 1) % totalImages;
+                updateFullscreenImage();
+            } else if (e.key === 'Escape') {
+                fullscreen.classList.remove('active');
+            }
+        });
+
         const gallery = document.getElementById('gallery');
         
         for (let i = 1; i <= totalImages; i++) {
