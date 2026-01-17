@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zine</title>
+    <title>Hiatus Photozine</title>
     <style>
         * {
             margin: 0;
@@ -14,22 +14,73 @@
 
         body {
             background: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            padding: 40px 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            padding: 60px 24px;
+            line-height: 1.6;
         }
 
         h1 {
             text-align: center;
-            font-size: 24px;
-            margin-bottom: 60px;
-            font-weight: 400;
-            letter-spacing: 0.05em;
+            font-size: 28px;
+            margin-bottom: 72px;
+            font-weight: 300;
+            letter-spacing: 0.08em;
+            color: #1a1a1a;
+        }
+
+        .cover {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #272727;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s ease;
+        }
+
+        .cover.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .cover-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            position: relative;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        .cover-arrow {
+            z-index: 1;
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(0, 0, 0, 0.45);
+            font-size: 32px;
+            line-height: 1;
+            font-weight: 100;
+            letter-spacing: -0.02em;
+            transition: color 0.3s ease, transform 0.2s ease;
+            cursor: pointer;
+        }
+
+        .cover-arrow:hover {
+            color: rgba(0, 0, 0, 0.8);
+            transform: translateX(-50%) translateY(-2px);
         }
 
         .gallery {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            gap: 24px;
             max-width: 1200px;
             margin: 0 auto;
         }
@@ -47,7 +98,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #000;
+            background: #fff;
             display: none;
             align-items: center;
             justify-content: center;
@@ -64,6 +115,28 @@
             cursor: pointer;
         }
 
+        /* Auto-hide UI (controls + close) until user interacts */
+        .fullscreen-controls,
+        .close-btn {
+            opacity: 0;
+            transition: opacity 180ms ease;
+        }
+
+        .fullscreen.show-ui .fullscreen-controls,
+        .fullscreen.show-ui .close-btn {
+            opacity: 1;
+        }
+
+        .fullscreen:not(.show-ui) .fullscreen-controls button,
+        .fullscreen:not(.show-ui) .close-btn {
+            pointer-events: none;
+        }
+
+        .fullscreen.show-ui .fullscreen-controls button,
+        .fullscreen.show-ui .close-btn {
+            pointer-events: auto;
+        }
+
         .fullscreen-controls {
             position: absolute;
             top: 50%;
@@ -73,95 +146,102 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 24px;
+            padding: 0 32px;
             pointer-events: none; /* clicks pass through except on buttons */
         }
 
         .fullscreen-controls button {
             pointer-events: auto;
-            width: 48px;
-            height: 48px;
-            border-radius: 999px;
-            padding: 0;
-            display: grid;
-            place-items: center;
-
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.45);
+            background: none;
+            border: none;
+            color: rgba(0, 0, 0, 0.45);
+            padding: 16px 12px;
             cursor: pointer;
-            font-size: 20px;
+            font-size: 32px;
             line-height: 1;
-            transition: background 0.2s, transform 0.08s ease;
+            font-weight: 100;
+            letter-spacing: -0.02em;
+            transition: color 0.3s ease, transform 0.2s ease;
+            transform: translateY(0);
         }
 
         .fullscreen-controls button:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .fullscreen-controls button:active {
-            transform: scale(0.96);
+            color: rgba(0, 0, 0, 0.8);
+            transform: translateY(-2px);
         }
 
         .close-btn {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            padding: 8px 16px;
+            top: 24px;
+            right: 24px;
+            background: none;
+            border: none;
+            color: rgba(0, 0, 0, 0.45);
+            padding: 8px;
             cursor: pointer;
-            font-size: 14px;
-            transition: background 0.2s;
+            font-size: 24px;
+            line-height: 1;
+            font-weight: 300;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.3s ease, transform 0.2s ease, opacity 0.2s ease;
+            opacity: 0.85;
         }
 
         .close-btn:hover {
-            background: rgba(255, 255, 255, 0.3);
+            color: rgba(0, 0, 0, 0.8);
+            transform: rotate(90deg);
+            opacity: 1;
         }
 
         @media (max-width: 768px) {
             body {
-                padding: 30px 15px;
+                padding: 40px 16px;
             }
 
             h1 {
-                font-size: 20px;
-                margin-bottom: 40px;
+                font-size: 22px;
+                margin-bottom: 56px;
+                letter-spacing: 0.06em;
             }
 
             .gallery {
                 grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 15px;
+                gap: 20px;
             }
 
             .fullscreen-controls {
-                padding: 0 12px;
+                padding: 0 16px;
             }
 
             .fullscreen-controls button {
-                width: 42px;
-                height: 42px;
-                font-size: 18px;
+                font-size: 28px;
+                padding: 14px 10px;
             }
         }
     </style>
 </head>
 <body>
-    <h1>Zine</h1>
+    <div class="cover" id="cover">
+        <img src="cover.jpg" alt="Cover" class="cover-image">
+        <div class="cover-arrow">↓</div>
+    </div>
     <div class="gallery" id="gallery"></div>
     <div class="fullscreen" id="fullscreen">
-        <button class="close-btn" id="closeBtn">Close</button>
+        <button class="close-btn" id="closeBtn" aria-label="Close">×</button>
         <img id="fullscreenImg" src="" alt="">
         <div class="fullscreen-controls">
-            <button id="prevBtn" aria-label="Previous photo">←</button>
-            <button id="nextBtn" aria-label="Next photo">→</button>
+            <button id="prevBtn" aria-label="Previous photo">‹</button>
+            <button id="nextBtn" aria-label="Next photo">›</button>
         </div>
     </div>
 
     <script>
         let currentImageIndex = 0;
-        const totalImages = 25;
+        const totalImages = 36;
 
         // Create fullscreen overlay HTML
         function createFullscreenOverlay() {
@@ -191,23 +271,65 @@
         // Update fullscreen image
         function updateFullscreenImage() {
             const fullscreenImg = document.getElementById('fullscreenImg');
-            fullscreenImg.src = `imgs/${currentImageIndex + 1}.jpg`;
+            fullscreenImg.src = `HQ_imgs/HQ_${currentImageIndex + 1}.jpg`;
         }
 
         // Add fullscreen functionality to image
         function addFullscreenListener(imgElement, index) {
-            imgElement.addEventListener('dblclick', () => {
+            imgElement.addEventListener('click', () => {
                 currentImageIndex = index;
                 updateFullscreenImage();
-                document.getElementById('fullscreen').classList.add('active');
+                const fullscreen = document.getElementById('fullscreen');
+                fullscreen.classList.add('active');
+                showFullscreenUI();
             });
         }
 
         createFullscreenOverlay();
 
+        // Cover page scroll behavior
+        const cover = document.getElementById('cover');
+        let hasScrolled = false;
+
+        function handleScroll() {
+            if (!hasScrolled && (window.scrollY > 50 || window.pageYOffset > 50)) {
+                hasScrolled = true;
+                cover.classList.add('fade-out');
+                setTimeout(() => {
+                    cover.style.display = 'none';
+                }, 600); // Match transition duration
+            }
+        }
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('wheel', handleScroll, { passive: true });
+        window.addEventListener('touchmove', handleScroll, { passive: true });
+
+        // Auto-hide fullscreen UI (arrows + close) until mouse/touch/keyboard interaction
+        let uiHideTimer = null;
+        const UI_HIDE_DELAY_MS = 1400;
+
+        function showFullscreenUI() {
+            const fullscreen = document.getElementById('fullscreen');
+            fullscreen.classList.add('show-ui');
+            if (uiHideTimer) clearTimeout(uiHideTimer);
+            uiHideTimer = setTimeout(() => {
+                fullscreen.classList.remove('show-ui');
+            }, UI_HIDE_DELAY_MS);
+        }
+
+        const fullscreenEl = document.getElementById('fullscreen');
+        fullscreenEl.addEventListener('mousemove', showFullscreenUI);
+        fullscreenEl.addEventListener('touchstart', showFullscreenUI, { passive: true });
+        fullscreenEl.addEventListener('click', showFullscreenUI);
+
+        // Show UI immediately on open, then auto-hide
+        showFullscreenUI();
+
         document.addEventListener('keydown', (e) => {
             const fullscreen = document.getElementById('fullscreen');
             if (!fullscreen.classList.contains('active')) return;
+            showFullscreenUI();
 
             if (e.key === 'ArrowLeft') {
                 currentImageIndex = (currentImageIndex - 1 + totalImages) % totalImages;
@@ -217,6 +339,7 @@
                 updateFullscreenImage();
             } else if (e.key === 'Escape') {
                 fullscreen.classList.remove('active');
+                fullscreen.classList.remove('show-ui');
             }
         });
 
